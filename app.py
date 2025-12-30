@@ -10,10 +10,10 @@ st.set_page_config(
     layout="wide"
 )
 
-MAX_VISUAL_N = 15
+MAX_VISUAL_N = 10
 MAX_GRAPH_N = 100
 BASE_WIDTH = 120
-ANIMATION_DELAY = 0.08
+ANIMATION_DELAY = 0.02
 
 sys.setrecursionlimit(3000)
 
@@ -90,8 +90,6 @@ with col_i:
     end = time.perf_counter()
     st.code(f"Iterative execution time: {end - start:.6f} seconds")
 
-st.caption("Pengukuran dibatasi depth kecil agar aman dari crash")
-
 # ================== VISUALISASI ==================
 st.markdown("## Visualisasi Tower of Hanoi")
 
@@ -120,7 +118,7 @@ def render_towers(towers, placeholder):
                             height:16px;
                             width:{width}px;
                             margin:4px auto;
-                            border-radius:6px;
+                            border-radius:15px;
                         "></div>
                         """,
                         unsafe_allow_html=True
@@ -149,13 +147,3 @@ if show_visual:
             run_visual(n)
     else:
         st.warning("Visualisasi hanya tersedia untuk n ≤ 15")
-
-# ================== KESIMPULAN ==================
-st.markdown("""
-## Kesimpulan
-
-- Tower of Hanoi memiliki kompleksitas waktu O(2^n)
-- Rekursif rawan crash untuk n besar
-- Iteratif lebih aman secara memori
-- Visualisasi hanya masuk akal untuk n kecil
-""")
