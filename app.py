@@ -128,15 +128,20 @@ def render_towers(towers, placeholder):
 
 def run_visual(n):
     towers = [list(range(n, 0, -1)), [], []]
-    placeholder = st.empty()
+    anim_placeholder = st.empty()
+    final_placeholder = st.empty()
 
     for src, dst in generate_moves(n, 0, 1, 2):
         disk = towers[src].pop()
         towers[dst].append(disk)
-        render_towers(towers, placeholder)
+        anim_placeholder.empty()
+        render_towers(towers, anim_placeholder)
         time.sleep(ANIMATION_DELAY)
+        
+    anim_placeholder.empty()
+    render_towers(towers, final_placeholder)
+    st.success("Simulasi selesai")
 
-    render_towers(towers, placeholder)
 
 if show_visual:
     if n <= MAX_VISUAL_N:
