@@ -2,6 +2,7 @@ import streamlit as st
 import math
 import pandas as pd
 import time
+import sys
 
 # ================== KONFIGURASI ==================
 st.set_page_config(
@@ -13,6 +14,8 @@ MAX_VISUAL_N = 15
 MAX_GRAPH_N = 100
 BASE_WIDTH = 120
 ANIMATION_DELAY = 0.08
+
+sys.setrecursionlimit(3000)
 
 # ================== JUDUL ==================
 st.title("Analisis Kompleksitas Algoritma")
@@ -38,10 +41,10 @@ log10_Tn = n * math.log10(2)
 
 c1, c2, c3 = st.columns(3)
 c1.metric("Jumlah disk", n)
-c2.metric("T(n)", "2^n - 1")
+c2.metric("Jumlah langkah", f"2^{n} - 1")
 c3.metric("Skala besar", f"10^{log10_Tn:.2f}")
 
-# ================== GRAFIK PERTUMBUHAN ==================
+# ================== GRAFIK ==================
 st.markdown("## Laju Pertumbuhan")
 
 plot_n = min(n, MAX_GRAPH_N)
@@ -52,40 +55,42 @@ df = pd.DataFrame({
 
 st.line_chart(df, x="n", y="log10(2^n)", height=350)
 
-# ================== PENGUKURAN WAKTU EKSEKUSI ==================
-st.markdown("## Waktu Eksekusi")
+# ================== WAKTU EKSEKUSI ==================
+st.markdown("## Waktu Eksekusi (seperti terminal)")
 
-def hanoi_recursive_count(n):
-    if n == 1:
-        return 1
-    return hanoi_recursive_count(n-1) + 1 + hanoi_recursive_count(n-1)
+# Rekursif aman (dummy depth kecil)
+def hanoi_recursive_dummy(k):
+    if k == 0:
+        return
+    hanoi_recursive_dummy(k - 1)
+    hanoi_recursive_dummy(k - 1)
 
-def hanoi_iterative_count(n):
-    stack = [(n, 0, 1, 2)]
-    count = 0
+# Iteratif stack
+def hanoi_iterative_dummy(k):
+    stack = [k]
     while stack:
-        k, _, _, _ = stack.pop()
-        if k == 1:
-            count += 1
-        else:
-            stack.append((k-1, 1, 0, 2))
-            stack.append((1, 0, 1, 2))
-            stack.append((k-1, 0, 2, 1))
-    return count
+        x = stack.pop()
+        if x > 0:
+            stack.append(x - 1)
+            stack.append(x - 1)
+
+SAFE_N = min(n, 25)
 
 col_r, col_i = st.columns(2)
 
 with col_r:
     start = time.perf_counter()
-    hanoi_recursive_count(n)
+    hanoi_recursive_dummy(SAFE_N)
     end = time.perf_counter()
-    st.metric("Rekursif (detik)", f"{end - start:.6f}")
+    st.code(f"Recursive execution time: {end - start:.6f} seconds")
 
 with col_i:
     start = time.perf_counter()
-    hanoi_iterative_count(n)
+    hanoi_iterative_dummy(SAFE_N)
     end = time.perf_counter()
-    st.metric("Iteratif (detik)", f"{end - start:.6f}")
+    st.code(f"Iterative execution time: {end - start:.6f} seconds")
+
+st.caption("Pengukuran dibatasi depth kecil agar aman dari crash")
 
 # ================== VISUALISASI ==================
 st.markdown("## Visualisasi Tower of Hanoi")
@@ -102,6 +107,7 @@ def render_towers(towers, placeholder):
     with placeholder.container():
         cols = st.columns(3)
         labels = ["Tower A", "Tower B", "Tower C"]
+
         for i in range(3):
             with cols[i]:
                 st.markdown(f"**{labels[i]}**")
@@ -130,11 +136,7 @@ def run_visual(n):
         render_towers(towers, placeholder)
         time.sleep(ANIMATION_DELAY)
 
-    # FORCE FINAL STATE
-    towers = [[], [], list(range(n, 0, -1))]
     render_towers(towers, placeholder)
-
-    st.success("Simulasi selesai")
 
 if show_visual:
     if n <= MAX_VISUAL_N:
@@ -148,7 +150,7 @@ st.markdown("""
 ## Kesimpulan
 
 - Tower of Hanoi memiliki kompleksitas waktu O(2^n)
-- Rekursif dan iteratif menghasilkan jumlah langkah yang sama
-- Iteratif lebih aman untuk n besar
-- Visualisasi hanya layak untuk n kecil
+- Rekursif rawan crash untuk n besar
+- Iteratif lebih aman secara memori
+- Visualisasi hanya masuk akal untuk n kecil
 """)
